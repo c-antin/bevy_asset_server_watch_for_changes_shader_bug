@@ -2,6 +2,8 @@
 //!
 //! This example uses a specialized pipeline.
 
+use std::fs;
+
 use bevy::{
     asset::AssetServerSettings,
     core_pipeline::core_3d::Transparent3d,
@@ -36,9 +38,11 @@ fn main() {
             watch_for_changes: true,
             ..default()
         })
+        .insert_resource(ShaderUpdateTimer(Timer::from_seconds(0.001, true)))
         .add_plugins(DefaultPlugins)
         .add_plugin(CustomMaterialPlugin)
         .add_startup_system(setup)
+        .add_system(shader_update_system)
         .run();
 }
 
@@ -270,4 +274,19 @@ impl<const I: usize> EntityRenderCommand for SetTimeBindGroup<I> {
 
         RenderCommandResult::Success
     }
+}
+
+struct ShaderUpdateTimer(Timer);
+
+fn shader_update_system(time: Res<Time>, mut timer: ResMut<ShaderUpdateTimer>) {
+    if !timer.0.tick(time.delta()).just_finished() {
+        return;
+    }
+    let millis = time.time_since_startup().as_millis();
+    // info!("{}", millis % 2);
+    fs::copy(
+        format!("assets/shaders/main{}.wgsl", millis % 2),
+        "assets/shaders/main.wgsl",
+    )
+    .unwrap();
 }
