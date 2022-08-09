@@ -3,6 +3,7 @@
 //! This example uses a specialized pipeline.
 
 use bevy::{
+    asset::AssetServerSettings,
     core_pipeline::core_3d::Transparent3d,
     ecs::system::{
         lifetimeless::{Read, SRes},
@@ -31,6 +32,10 @@ use bevy::{
 
 fn main() {
     App::new()
+        .insert_resource(AssetServerSettings {
+            watch_for_changes: true,
+            ..default()
+        })
         .add_plugins(DefaultPlugins)
         .add_plugin(CustomMaterialPlugin)
         .add_startup_system(setup)
